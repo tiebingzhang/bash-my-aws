@@ -443,6 +443,24 @@ instance-tags() {
   column -s$'\t' -t
 }
 
+instance-sgs() {
+
+  # List security groups applied EC2 Instance(s)
+  #
+  #     USAGE: instance-sgs instance-id [instance-id]
+
+  local instance_ids=$(skim-stdin "$@")
+  [[ -z $instance_ids ]] && __bma_usage "instance-id [instance-id]" && return 1
+
+  aws ec2 describe-instances                            \
+    --instance-ids $instance_ids                        \
+    --output text                                       \
+    --query "Reservations[0].Instances[].[
+        InstanceId,
+        join(', ', SecurityGroups[].GroupName)
+      ][][]"    |
+  column -s$'\t' -t
+}
 
 instance-terminate() {
 
